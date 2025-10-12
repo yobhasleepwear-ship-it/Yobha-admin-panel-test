@@ -40,4 +40,9 @@ export const Delete = async (url, config = {}) => {
   return response;
 };
 
+export const Patch = async (url, data = {}, config = {}) => {
+  const response = await apiClient.patch(url, data, config);
+  return response;
+};
+
 export default apiClient;
