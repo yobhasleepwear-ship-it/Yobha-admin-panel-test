@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { uploadProductImage } from "../../service/product-upload";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "../../firebase" // adjust path
 
 const ImageUploader = ({ productId, onUploadComplete }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [progress, setProgress] = useState({}); // track progress per file
 
   const handleFileChange = (e) => {
     setSelectedFiles([...e.target.files]);
@@ -19,10 +21,32 @@ const ImageUploader = ({ productId, onUploadComplete }) => {
     setUploading(true);
     try {
       const results = [];
+
       for (let file of selectedFiles) {
-        const response = await uploadProductImage(productId, file, file.name, "admin-123");
-        results.push(response);
+        const fileName = `${productId}/${Date.now()}-${file.name}`;
+        const storageRef = ref(storage, `product-images/${fileName}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        // Wait for each file upload to finish
+        const url = await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const prog = Math.round(
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              );
+              setProgress((prev) => ({ ...prev, [file.name]: prog }));
+            },
+            (err) => reject(err),
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then(resolve);
+            }
+          );
+        });
+
+        results.push({ name: file.name, url });
       }
+
       setUploadedImages([...uploadedImages, ...results]);
       setSelectedFiles([]);
 
@@ -46,6 +70,16 @@ const ImageUploader = ({ productId, onUploadComplete }) => {
         className="border p-2 rounded-md w-full"
       />
 
+      {selectedFiles.length > 0 && (
+        <div className="mt-2">
+          {selectedFiles.map((file) => (
+            <p key={file.name}>
+              {file.name} - {progress[file.name] || 0}%
+            </p>
+          ))}
+        </div>
+      )}
+
       <button
         onClick={handleUpload}
         disabled={uploading || selectedFiles.length === 0}
@@ -59,8 +93,8 @@ const ImageUploader = ({ productId, onUploadComplete }) => {
           {uploadedImages.map((img, index) => (
             <img
               key={index}
-              src={img.url || img.Url}
-              alt={img.alt || img.Alt}
+              src={img.url}
+              alt={img.name}
               className="w-full h-24 object-cover rounded-md border"
             />
           ))}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ImageUploader from "../../comman/Image-Uploader/ImageUploader";
 import { AddProduct } from "../../service/product-upload";
 
 // Helper utilities
@@ -9,7 +10,6 @@ const makeLong = (num) => ({ $numberLong: String(num || 0) });
 const genId = (prefix = "") => `${prefix}${Math.random().toString(36).slice(2, 10)}`;
 
 export default function ProductFormFull() {
-  // Central dropdown state
   const [dropdownOptions] = useState({
     categories: ["Sleepwear", "Loungewear", "Nightwear", "Activewear"],
     subCategories: ["Nightshirts", "Pajamas", "Robes", "Shorts"],
@@ -21,7 +21,6 @@ export default function ProductFormFull() {
     boolean: ["true", "false"],
   });
 
-  // Main form data skeleton
   const [data, setData] = useState({
     _id: { $oid: genId("oid_") },
     ProductId: "",
@@ -53,48 +52,31 @@ export default function ProductFormFull() {
     PriceList: [],
     ProductVariationIds: [],
     CountryPrices: [],
-    Specifications: {
-      Fabric: "",
-      Length: "",
-      Origin: "",
-      Fit: "",
-      Care: "",
-      Extra: [],
-    },
+    Specifications: { Fabric: "", Length: "", Origin: "", Fit: "", Care: "", Extra: [] },
     KeyFeatures: [],
     CareInstructions: [],
     Inventory: [],
     FreeDelivery: true,
     ReturnPolicy: "",
-    ShippingInfo: {
-      FreeShipping: true,
-      EstimatedDelivery: "",
-      ShippingPrice: makeDecimal("0"),
-      CashOnDelivery: true,
-    },
+    ShippingInfo: { FreeShipping: true, EstimatedDelivery: "", ShippingPrice: makeDecimal("0"), CashOnDelivery: true },
     MetaTitle: "",
     MetaDescription: "",
     Views: makeLong(0),
     UnitsSold: makeLong(0),
   });
 
-  // local UI state for simple text inputs (for comma-separated arrays)
   const update = (path, value) => {
     setData((d) => {
       const nd = JSON.parse(JSON.stringify(d));
       let cur = nd;
       const parts = path.split(".");
-      for (let i = 0; i < parts.length - 1; i++) {
-        cur = cur[parts[i]];
-      }
+      for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
       cur[parts[parts.length - 1]] = value;
       return nd;
     });
   };
 
-  // ---------- Utilities for nested lists ----------
   const addVariant = (variant) => {
-    // ensure Sku and _id
     const v = {
       _id: variant._id || genId("VAR"),
       Sku: variant.Sku || `${data.ProductId || "PID"}-${variant.Color?.slice(0,3) || "COL"}-${variant.Size || "S"}`,
@@ -105,10 +87,12 @@ export default function ProductFormFull() {
       Images: variant.Images || [],
       IsActive: variant.IsActive !== undefined ? variant.IsActive : true,
     };
-    setData((d) => {
-      const nd = { ...d, Variants: [...d.Variants, v], VariantSkus: [...d.VariantSkus, v.Sku], ProductVariationIds: [...d.ProductVariationIds, v._id] };
-      return nd;
-    });
+    setData((d) => ({
+      ...d,
+      Variants: [...d.Variants, v],
+      VariantSkus: [...d.VariantSkus, v.Sku],
+      ProductVariationIds: [...d.ProductVariationIds, v._id],
+    }));
   };
 
   const removeVariantAt = (idx) => {
@@ -121,73 +105,8 @@ export default function ProductFormFull() {
     });
   };
 
-  const addProductImage = (imgObj) => {
-    setData((d) => ({ ...d, Images: [...d.Images, imgObj] }));
-  };
-
-  const removeProductImageAt = (i) => {
-    setData((d) => {
-      const nd = { ...d, Images: d.Images.filter((_, idx) => idx !== i) };
-      return nd;
-    });
-  };
-
-  const addPriceListItem = (pl) => {
-    const item = {
-      _id: pl._id || genId("PRICE"),
-      Size: pl.Size || "",
-      PriceAmount: makeDecimal(pl.PriceAmount || "0"),
-      Currency: pl.Currency || "INR",
-      Quantity: Number(pl.Quantity || 0),
-      Country: pl.Country || "IN",
-    };
-    setData((d) => ({ ...d, PriceList: [...d.PriceList, item] }));
-  };
-
-  const addCountryPrice = (cp) => {
-    const item = {
-      _id: cp._id || genId("CP"),
-      Country: cp.Country || "IN",
-      PriceAmount: makeDecimal(cp.PriceAmount || "0"),
-      Currency: cp.Currency || "INR",
-    };
-    setData((d) => ({ ...d, CountryPrices: [...d.CountryPrices, item] }));
-  };
-
-  const addReview = (r) => {
-    const item = {
-      _id: r._id || genId("REV"),
-      UserId: r.UserId || "USR_UNK",
-      Rating: Number(r.Rating || 0),
-      Comment: r.Comment || "",
-      CreatedAt: makeDateObj(nowISO()),
-      Approved: !!r.Approved,
-    };
-    setData((d) => ({ ...d, Reviews: [...d.Reviews, item], ReviewCount: d.Reviews.length + 1 }));
-  };
-
-  const addInventory = (inv) => {
-    const item = {
-      _id: inv._id || genId("INV"),
-      VariantId: inv.VariantId || "",
-      Sku: inv.Sku || "",
-      Size: inv.Size || "",
-      Color: inv.Color || "",
-      Quantity: Number(inv.Quantity || 0),
-      Reserved: Number(inv.Reserved || 0),
-      WarehouseId: inv.WarehouseId || "",
-      UpdatedAt: makeDateObj(nowISO()),
-    };
-    setData((d) => ({ ...d, Inventory: [...d.Inventory, item] }));
-  };
-
-  const addSpecExtra = (key, value) => {
-    const item = { _id: genId("SPEC"), Key: key, Value: value };
-    setData((d) => ({ ...d, Specifications: { ...d.Specifications, Extra: [...d.Specifications.Extra, item] } }));
-  };
-
-  const addKeyFeature = (f) => setData((d) => ({ ...d, KeyFeatures: [...d.KeyFeatures, f] }));
-  const addCareInstruction = (c) => setData((d) => ({ ...d, CareInstructions: [...d.CareInstructions, c] }));
+  const addProductImage = (imgObj) => setData((d) => ({ ...d, Images: [...d.Images, imgObj] }));
+  const removeProductImageAt = (i) => setData((d) => ({ ...d, Images: d.Images.filter((_, idx) => idx !== i) }));
   const addVariantImageToVariant = (variantIndex, imageObj) => {
     setData((d) => {
       const nd = JSON.parse(JSON.stringify(d));
@@ -197,99 +116,69 @@ export default function ProductFormFull() {
     });
   };
 
-  // image file -> dataURL helper
-  const fileToDataUrl = (file) =>
-    new Promise((res, rej) => {
-      const reader = new FileReader();
-      reader.onload = () => res(reader.result);
-      reader.onerror = rej;
-      reader.readAsDataURL(file);
-    });
-
-  // ---------- Submit ----------
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // build final payload (ensure updated timestamps)
-    const payload = JSON.parse(JSON.stringify(data));
-    payload.UpdatedAt = makeDateObj(nowISO());
-    // ensure Price fields already in correct format
-    // Views and UnitsSold already as long
-    console.log("Final payload:", payload);
-    try{
-      const response = AddProduct(payload);
-      console.log(response);
-    }
-    catch{
-      console.log("something went wrong")
-    }
-    // For demo: show in textarea below by setting state
-    setGenerated(JSON.stringify(payload, null, 2));
-    // If you'd call API, do fetch/axios here
+  const addPriceListItem = (pl) => {
+    const item = { _id: pl._id || genId("PRICE"), Size: pl.Size || "", PriceAmount: makeDecimal(pl.PriceAmount || "0"), Currency: pl.Currency || "INR", Quantity: Number(pl.Quantity || 0), Country: pl.Country || "IN" };
+    setData((d) => ({ ...d, PriceList: [...d.PriceList, item] }));
   };
 
-  // JSON display
-  const [generated, setGenerated] = useState("");
+  const addCountryPrice = (cp) => {
+    const item = { _id: cp._id || genId("CP"), Country: cp.Country || "IN", PriceAmount: makeDecimal(cp.PriceAmount || "0"), Currency: cp.Currency || "INR" };
+    setData((d) => ({ ...d, CountryPrices: [...d.CountryPrices, item] }));
+  };
 
-  // ---------- Local form helpers for quick nested item creation ----------
-  // We'll create small local forms for each nested add action
-  const [variantLocal, setVariantLocal] = useState({
-    Color: dropdownOptions.colors[0],
-    Size: dropdownOptions.sizes[0],
-    Quantity: 0,
-    PriceOverride: "0",
-    IsActive: true,
-  });
+  const addReview = (r) => {
+    const item = { _id: r._id || genId("REV"), UserId: r.UserId || "USR_UNK", Rating: Number(r.Rating || 0), Comment: r.Comment || "", CreatedAt: makeDateObj(nowISO()), Approved: !!r.Approved };
+    setData((d) => ({ ...d, Reviews: [...d.Reviews, item], ReviewCount: d.Reviews.length + 1 }));
+  };
+
+  const addInventory = (inv) => {
+    const item = { _id: inv._id || genId("INV"), VariantId: inv.VariantId || "", Sku: inv.Sku || "", Size: inv.Size || "", Color: inv.Color || "", Quantity: Number(inv.Quantity || 0), Reserved: Number(inv.Reserved || 0), WarehouseId: inv.WarehouseId || "", UpdatedAt: makeDateObj(nowISO()) };
+    setData((d) => ({ ...d, Inventory: [...d.Inventory, item] }));
+  };
+
+  const addSpecExtra = (key, value) => setData((d) => ({ ...d, Specifications: { ...d.Specifications, Extra: [...d.Specifications.Extra, { _id: genId("SPEC"), Key: key, Value: value }] } }));
+  const addKeyFeature = (f) => setData((d) => ({ ...d, KeyFeatures: [...d.KeyFeatures, f] }));
+  const addCareInstruction = (c) => setData((d) => ({ ...d, CareInstructions: [...d.CareInstructions, c] }));
+
+  // ---------- Local UI state ----------
+  const [variantLocal, setVariantLocal] = useState({ Color: dropdownOptions.colors[0], Size: dropdownOptions.sizes[0], Quantity: 0, PriceOverride: "0", IsActive: true, Images: [] });
   const [priceListLocal, setPriceListLocal] = useState({ Size: dropdownOptions.sizes[0], PriceAmount: "0", Currency: "INR", Quantity: 0, Country: "IN" });
   const [countryPriceLocal, setCountryPriceLocal] = useState({ Country: "IN", PriceAmount: "0", Currency: "INR" });
   const [reviewLocal, setReviewLocal] = useState({ UserId: "", Rating: 5, Comment: "", Approved: true });
   const [inventoryLocal, setInventoryLocal] = useState({ VariantId: "", Sku: "", Size: dropdownOptions.sizes[0], Color: dropdownOptions.colors[0], Quantity: 0, Reserved: 0, WarehouseId: "WH001" });
   const [specExtraLocal, setSpecExtraLocal] = useState({ Key: "", Value: "" });
-  const [imageFileLocal, setImageFileLocal] = useState(null);
+  const [generated, setGenerated] = useState("");
 
-  // upload product-level image
+  // ---------- Image Upload Handlers ----------
   const handleProductImageUpload = async (file) => {
     if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    const imgObj = {
-      Url: dataUrl,
-      ThumbnailUrl: dataUrl,
-      Alt: `${data.ProductId || "product"} image`,
-      UploadedByUserId: "admin",
-      UploadedAt: makeDateObj(nowISO()),
-    };
-    addProductImage(imgObj);
+    const reader = new FileReader();
+    reader.onload = () => addProductImage({ Url: reader.result, ThumbnailUrl: reader.result, Alt: `${data.ProductId || "product"} image`, UploadedByUserId: "admin", UploadedAt: makeDateObj(nowISO()) });
+    reader.readAsDataURL(file);
   };
 
-  // upload variant image and attach to variantLocalImages (we will add when adding variant)
   const handleVariantImageUpload = async (file, variantIndex = null) => {
     if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    const imgObj = {
-      Url: dataUrl,
-      ThumbnailUrl: dataUrl,
-      Alt: `variant-img`,
-      UploadedByUserId: "admin",
-      UploadedAt: makeDateObj(nowISO()),
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imgObj = { Url: reader.result, ThumbnailUrl: reader.result, Alt: "variant image", UploadedByUserId: "admin", UploadedAt: makeDateObj(nowISO()) };
+      if (variantIndex === null) setVariantLocal((v) => ({ ...v, Images: [...(v.Images || []), imgObj] }));
+      else addVariantImageToVariant(variantIndex, imgObj);
     };
-    if (variantIndex === null) {
-      // attach to local variantLocal.images array
-      setVariantLocal((v) => ({ ...v, Images: [...(v.Images || []), imgObj] }));
-    } else {
-      addVariantImageToVariant(variantIndex, imgObj);
-    }
+    reader.readAsDataURL(file);
   };
 
-  // small helper to update top-level simple fields
-  const simpleTopChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (type === "checkbox") update(name, checked);
-    else update(name, value);
-  };
+  const updateTop = (e) => { const { name, value, type, checked } = e.target; update(name, type === "checkbox" ? checked : value); };
+  const setCommaArray = (path, raw) => update(path, raw.split(",").map((s) => s.trim()).filter(Boolean));
 
-  // parse comma-separated lists for user convenience
-  const setCommaArray = (path, raw) => {
-    const arr = raw.split(",").map((s) => s.trim()).filter(Boolean);
-    update(path, arr);
+  // ---------- Submit ----------
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = JSON.parse(JSON.stringify(data));
+    payload.UpdatedAt = makeDateObj(nowISO());
+    console.log("Final payload:", payload);
+    try { const response = AddProduct(payload); console.log(response); } catch { console.log("something went wrong"); }
+    setGenerated(JSON.stringify(payload, null, 2));
   };
 
   return (
@@ -297,7 +186,7 @@ export default function ProductFormFull() {
       <h2 className="text-2xl font-semibold mb-4">Product Form (Full nested structure)</h2>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow">
 
-        {/* Basic */}
+        {/* Basic fields */}
         <div className="grid grid-cols-2 gap-3">
           <input name="ProductId" placeholder="ProductId" className="border p-2" onChange={(e) => update("ProductId", e.target.value)} />
           <input name="Name" placeholder="Name" className="border p-2" onChange={(e) => update("Name", e.target.value)} />
@@ -363,12 +252,11 @@ export default function ProductFormFull() {
           </div>
         </div>
 
-        {/* Images (product-level) */}
+        {/* Product Images */}
         <div>
           <h3 className="font-semibold">Product Images</h3>
           <div className="flex gap-2 items-center mt-2">
-            <input type="file" accept="image/*" onChange={(e) => { setImageFileLocal(e.target.files?.[0] || null); }} />
-            <button type="button" className="px-3 py-1 bg-green-600 text-white rounded" onClick={async () => { if (imageFileLocal) { await handleProductImageUpload(imageFileLocal); setImageFileLocal(null); } }}>Upload & Add</button>
+            <ImageUploader  productId={data.ProductId}  onUpload={(file) => handleProductImageUpload(file)} />
           </div>
           <div className="mt-2 grid grid-cols-4 gap-2">
             {data.Images.map((img, i) => (
@@ -381,10 +269,9 @@ export default function ProductFormFull() {
           </div>
         </div>
 
-        {/* Variants (with per-variant image support) */}
+        {/* Variants */}
         <div>
           <h3 className="font-semibold">Variants</h3>
-
           <div className="grid grid-cols-5 gap-2 mt-3">
             <select value={variantLocal.Color} onChange={(e) => setVariantLocal(v => ({ ...v, Color: e.target.value }))} className="border p-2">
               {dropdownOptions.colors.map(c => <option key={c} value={c}>{c}</option>)}
@@ -395,7 +282,7 @@ export default function ProductFormFull() {
             <input type="number" value={variantLocal.Quantity} onChange={(e) => setVariantLocal(v => ({ ...v, Quantity: Number(e.target.value) }))} className="border p-2" placeholder="Quantity" />
             <input type="number" value={variantLocal.PriceOverride} onChange={(e) => setVariantLocal(v => ({ ...v, PriceOverride: e.target.value }))} className="border p-2" placeholder="PriceOverride" />
             <div className="flex gap-2">
-              <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleVariantImageUpload(f, null); }} />
+              <ImageUploader  productId={data.ProductId}  onUpload={(file) => handleVariantImageUpload(file, null)} />
               <button type="button" className="bg-blue-600 text-white px-3 rounded" onClick={() => { addVariant(variantLocal); setVariantLocal({ Color: dropdownOptions.colors[0], Size: dropdownOptions.sizes[0], Quantity: 0, PriceOverride: "0", Images: [], IsActive: true }); }}>Add Variant</button>
             </div>
           </div>
@@ -415,10 +302,7 @@ export default function ProductFormFull() {
                 </div>
 
                 <div className="mt-2">
-                  <div className="flex gap-2 items-center">
-                    <input type="file" accept="image/*" onChange={async (e) => { const f = e.target.files?.[0]; if (f) await handleVariantImageUpload(f, idx); }} />
-                    <div className="text-xs">Upload image for this variant</div>
-                  </div>
+                  <ImageUploader  productId={data.ProductId}  onUpload={(file) => handleVariantImageUpload(file, idx)} />
                   <div className="mt-2 grid grid-cols-6 gap-2">
                     {(v.Images || []).map((img, i) => (
                       <div key={i} className="border p-1">
@@ -535,3 +419,4 @@ export default function ProductFormFull() {
     </div>
   );
 }
+
