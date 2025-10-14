@@ -13,10 +13,9 @@ const PrivateRoute = ({ children }) => {
 };
 
 // Lazy load pages
-const Home = lazy(() => import("./pages/coming-soon/comingSoon"));
 const AddProduct = lazy(() => import("./pages/product/add-product"));
-// const EditProduct = lazy(() => import("./pages/product/edit-product"));
-// const Orders = lazy(() => import("./pages/orders/orders"));
+const EditProduct = lazy(() => import("./pages/product/edit-product"));
+const Products = lazy(() => import("./pages/products/products"));
 
 const Router = () => {
   return (
@@ -30,7 +29,7 @@ const Router = () => {
           path="/"
           element={
             localStorage.getItem("token") ? (
-              <Navigate to="/home" replace />
+              <Navigate to="/products" replace />
             ) : (
               <Navigate to="/signup" replace />
             )
@@ -39,11 +38,11 @@ const Router = () => {
 
         {/* Private Routes */}
         <Route
-          path="/home"
+          path="/products"
           element={
             <PrivateRoute>
               <AppLayout>
-                <Home />
+                <Products />
               </AppLayout>
             </PrivateRoute>
           }
@@ -58,8 +57,8 @@ const Router = () => {
             </PrivateRoute>
           }
         />
-        {/* <Route
-          path="/edit-product"
+        <Route
+          path="/edit-product/:productId"
           element={
             <PrivateRoute>
               <AppLayout>
@@ -68,23 +67,13 @@ const Router = () => {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/orders"
-          element={
-            <PrivateRoute>
-              <AppLayout>
-                <Orders />
-              </AppLayout>
-            </PrivateRoute>
-          }
-        /> */}
 
         {/* Catch-all unknown routes */}
         <Route
           path="*"
           element={
             localStorage.getItem("token") ? (
-              <Navigate to="/home" replace />
+              <Navigate to="/products" replace />
             ) : (
               <Navigate to="/signup" replace />
             )
