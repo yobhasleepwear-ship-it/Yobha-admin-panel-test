@@ -58,24 +58,105 @@ const ProductForm = ({
 
   // Initialize form data
   const getInitialData = useCallback(() => {
+    console.log("=== ProductForm getInitialData ===");
+    console.log("initialData:", initialData);
+    console.log("isEditMode:", isEditMode);
+    
     if (initialData && isEditMode) {
-      return {
-        ...initialData,
-        Price: typeof initialData.Price === 'object' ? parseFloatValue(initialData.Price.$numberDecimal || "0") : parseFloatValue(initialData.Price || "0"),
-        CompareAtPrice: typeof initialData.CompareAtPrice === 'object' ? parseFloatValue(initialData.CompareAtPrice.$numberDecimal || "0") : parseFloatValue(initialData.CompareAtPrice || "0"),
-        PriceList: initialData.PriceList || [],
-        CountryPrices: initialData.CountryPrices || [],
-        Specifications: initialData.Specifications || { Fabric: "", Length: "", Origin: "", Fit: "", Care: "", Extra: [] },
-        KeyFeatures: initialData.KeyFeatures || [],
-        CareInstructions: initialData.CareInstructions || [],
-        Inventory: initialData.Inventory || [],
-        Variants: initialData.Variants || [],
-        Images: initialData.Images || [],
-        SizeOfProduct: initialData.SizeOfProduct || [],
-        AvailableColors: initialData.AvailableColors || [],
-        FabricType: initialData.FabricType || [],
-        ShippingInfo: initialData.ShippingInfo || { FreeShipping: true, EstimatedDelivery: "", CashOnDelivery: true }
-      };
+      console.log("Processing initialData for edit mode");
+      
+      // Map API response fields to form expected fields
+      const processedData = {
+        // Basic product info
+        ProductId: initialData.productId || initialData.ProductId || "",
+        Name: initialData.name || initialData.Name || "",
+        Slug: initialData.slug || initialData.Slug || "",
+        Description: initialData.description || initialData.Description || "",
+        
+        // Pricing
+        Price: typeof initialData.price === 'object' ? parseFloatValue(initialData.price.$numberDecimal || "0") : parseFloatValue(initialData.price || initialData.Price || "0"),
+        CompareAtPrice: typeof initialData.compareAtPrice === 'object' ? parseFloatValue(initialData.compareAtPrice.$numberDecimal || "0") : parseFloatValue(initialData.compareAtPrice || initialData.CompareAtPrice || "0"),
+        
+        // Categories
+        ProductCategory: initialData.productCategory || initialData.Category || "",
+        ProductMainCategory: initialData.productMainCategory || initialData.MainCategory || "",
+        ProductSubCategory: initialData.productSubCategory || initialData.SubCategory || "",
+        
+        // Inventory
+        Stock: initialData.stock || initialData.Stock || 0,
+        
+        // Arrays and complex objects
+        PriceList: initialData.priceList || initialData.PriceList || [],
+        CountryPrices: initialData.countryPrices || initialData.CountryPrices || [],
+        Specifications: {
+          fabric: (initialData.specifications && initialData.specifications.fabric) || (initialData.Specifications && initialData.Specifications.fabric) || "",
+          length: (initialData.specifications && initialData.specifications.length) || (initialData.Specifications && initialData.Specifications.length) || "",
+          origin: (initialData.specifications && initialData.specifications.origin) || (initialData.Specifications && initialData.Specifications.origin) || "",
+          fit: (initialData.specifications && initialData.specifications.fit) || (initialData.Specifications && initialData.Specifications.fit) || "",
+          care: (initialData.specifications && initialData.specifications.care) || (initialData.Specifications && initialData.Specifications.care) || "",
+          extra: (initialData.specifications && initialData.specifications.extra) || (initialData.Specifications && initialData.Specifications.extra) || []
+        },
+        KeyFeatures: initialData.keyFeatures || initialData.KeyFeatures || [],
+        CareInstructions: initialData.careInstructions || initialData.CareInstructions || [],
+        Inventory: initialData.inventory || initialData.Inventory || [],
+        Variants: initialData.variants || initialData.Variants || [],
+        Images: initialData.images || initialData.Images || [],
+        SizeOfProduct: initialData.sizeOfProduct || initialData.SizeOfProduct || [],
+        AvailableColors: initialData.availableColors || initialData.AvailableColors || [],
+        FabricType: initialData.fabricType || initialData.FabricType || [],
+        
+        // Shipping and policies
+        ShippingInfo: {
+          freeShipping: (initialData.shippingInfo && initialData.shippingInfo.freeShipping !== undefined) ? initialData.shippingInfo.freeShipping : 
+                       (initialData.ShippingInfo && initialData.ShippingInfo.freeShipping !== undefined) ? initialData.ShippingInfo.freeShipping : true,
+          estimatedDelivery: (initialData.shippingInfo && initialData.shippingInfo.estimatedDelivery) || 
+                            (initialData.ShippingInfo && initialData.ShippingInfo.estimatedDelivery) || "",
+          cashOnDelivery: (initialData.shippingInfo && initialData.shippingInfo.cashOnDelivery !== undefined) ? initialData.shippingInfo.cashOnDelivery : 
+                         (initialData.ShippingInfo && initialData.ShippingInfo.cashOnDelivery !== undefined) ? initialData.ShippingInfo.cashOnDelivery : true,
+          shippingPrice: (initialData.shippingInfo && initialData.shippingInfo.shippingPrice) || 
+                        (initialData.ShippingInfo && initialData.ShippingInfo.shippingPrice) || 0
+        },
+        ReturnPolicy: initialData.returnPolicy || initialData.ReturnPolicy || "",
+        
+        // SEO
+        MetaTitle: initialData.metaTitle || initialData.MetaTitle || "",
+        MetaDescription: initialData.metaDescription || initialData.MetaDescription || "",
+        
+        // Status flags
+        IsActive: initialData.isActive !== undefined ? initialData.isActive : (initialData.IsActive !== undefined ? initialData.IsActive : true),
+        IsFeatured: initialData.isFeatured !== undefined ? initialData.isFeatured : (initialData.IsFeatured !== undefined ? initialData.IsFeatured : false),
+        FreeDelivery: initialData.freeDelivery !== undefined ? initialData.freeDelivery : (initialData.FreeDelivery !== undefined ? initialData.FreeDelivery : false),
+        
+        // Additional fields that might be in the API response
+        AverageRating: initialData.averageRating || initialData.AverageRating || 0,
+        ReviewCount: initialData.reviewCount || initialData.ReviewCount || 0,
+        SalesCount: initialData.salesCount || initialData.SalesCount || 0,
+        Views: initialData.views || initialData.Views || 0,
+        UnitsSold: initialData.unitsSold || initialData.UnitsSold || 0,
+        
+        // Timestamps
+        CreatedAt: initialData.createdAt || initialData.CreatedAt || "",
+        UpdatedAt: initialData.updatedAt || initialData.UpdatedAt || ""
+              };
+              
+              console.log("=== PRODUCT FORM DEBUG ===");
+              console.log("Initial data received:", initialData);
+              console.log("Category values from API:", {
+                productCategory: initialData.productCategory,
+                Category: initialData.Category,
+                productMainCategory: initialData.productMainCategory,
+                MainCategory: initialData.MainCategory,
+                productSubCategory: initialData.productSubCategory,
+                SubCategory: initialData.SubCategory
+              });
+              console.log("Processed category values:", {
+                ProductCategory: processedData.ProductCategory,
+                ProductMainCategory: processedData.ProductMainCategory,
+                ProductSubCategory: processedData.ProductSubCategory
+              });
+              console.log("==========================");
+              console.log("Processed data:", processedData);
+              return processedData;
     }
 
     return {
@@ -106,12 +187,19 @@ const ProductForm = ({
     };
   }, [initialData, isEditMode]);
 
-  const [data, setData] = useState(getInitialData);
+  const [data, setData] = useState(() => {
+    const initial = getInitialData();
+    console.log("Initial data state:", initial);
+    return initial;
+  });
 
   // Update data when initialData changes (for edit mode)
   useEffect(() => {
     if (initialData && isEditMode) {
-      setData(getInitialData());
+      console.log("=== ProductForm useEffect - Updating data ===");
+      const newData = getInitialData();
+      console.log("Setting new data:", newData);
+      setData(newData);
     }
   }, [initialData, isEditMode, getInitialData]);
 
@@ -195,7 +283,110 @@ const ProductForm = ({
   // Local state for comma-separated inputs
   const [sizesInput, setSizesInput] = useState("");
   const [colorsInput, setColorsInput] = useState("");
+  
+  // State for tracking which items are being edited
+  const [editingItems, setEditingItems] = useState({
+    priceList: {},
+    countryPrices: {},
+    specifications: {},
+    keyFeatures: {},
+    careInstructions: {},
+    inventory: {},
+    variants: {}
+  });
   const [fabricInput, setFabricInput] = useState("");
+
+  // Editing state management functions
+  const startEditing = (section, index) => {
+    setEditingItems(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [index]: true }
+    }));
+  };
+
+  const stopEditing = (section, index) => {
+    setEditingItems(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [index]: false }
+    }));
+  };
+
+  const isEditing = (section, index) => {
+    return editingItems[section] && editingItems[section][index];
+  };
+
+  const updateArrayItem = (path, index, updatedItem) => {
+    setData((d) => {
+      const nd = { ...d };
+      let cur = nd;
+      const parts = path.split(".");
+      for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+      const array = [...(cur[parts[parts.length - 1]] || [])];
+      array[index] = updatedItem;
+      cur[parts[parts.length - 1]] = array;
+      return nd;
+    });
+  };
+
+  // Helper function to find existing price for a country
+  const findExistingPrice = (countryCode, excludeIndex = null) => {
+    // Check CountryPrices first
+    const countryPrice = data.CountryPrices?.find((item, index) => 
+      index !== excludeIndex && (item.Country === countryCode || item.country === countryCode)
+    );
+    if (countryPrice) {
+      return countryPrice.PriceAmount || countryPrice.priceAmount || 0;
+    }
+
+    // Check PriceList as fallback
+    const priceListItem = data.PriceList?.find((item, index) => 
+      index !== excludeIndex && (item.Country === countryCode || item.country === countryCode)
+    );
+    if (priceListItem) {
+      return priceListItem.PriceAmount || priceListItem.priceAmount || 0;
+    }
+
+    return 0;
+  };
+
+  // Helper function to find existing currency for a country
+  const findExistingCurrency = (countryCode, excludeIndex = null) => {
+    // Check CountryPrices first
+    const countryPrice = data.CountryPrices?.find((item, index) => 
+      index !== excludeIndex && (item.Country === countryCode || item.country === countryCode)
+    );
+    if (countryPrice) {
+      return countryPrice.Currency || countryPrice.currency || 'INR';
+    }
+
+    // Check PriceList as fallback
+    const priceListItem = data.PriceList?.find((item, index) => 
+      index !== excludeIndex && (item.Country === countryCode || item.country === countryCode)
+    );
+    if (priceListItem) {
+      return priceListItem.Currency || priceListItem.currency || 'INR';
+    }
+
+    // Default currency based on country
+    const countryCurrencyMap = {
+      "IN": "INR",
+      "AE": "AED", 
+      "SA": "SAR",
+      "QA": "QAR",
+      "KW": "KWD",
+      "OM": "OMR",
+      "BH": "BHD",
+      "JO": "JOD",
+      "LB": "LBP",
+      "EG": "EGP",
+      "IQ": "IQD",
+      "US": "USD",
+      "UK": "GBP",
+      "CA": "CAD",
+      "AU": "AUD"
+    };
+    return countryCurrencyMap[countryCode] || 'INR';
+  };
 
   // Array management functions
   const addToArray = (path, item) => {
@@ -384,64 +575,71 @@ const ProductForm = ({
     }, 100);
   };
 
+  // Safety check to ensure data is always defined
+  if (!data) {
+    console.log("Data is undefined, using fallback");
+    return <div className="flex items-center justify-center min-h-64">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading form...</p>
+      </div>
+    </div>;
+  }
+
   return (
     <div 
-      className="p-3 sm:p-4 md:p-6 max-w-6xl mx-auto min-h-screen"
+      className="w-full max-w-none"
       style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
     >
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-6 sm:mb-8 uppercase tracking-wider">
-        {isEditMode ? "Edit Product" : "Add New Product"}
-      </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-premium-white p-4 sm:p-6 md:p-8 rounded-lg shadow-lg border border-text-light/20">
+      <form onSubmit={handleSubmit} className="w-full space-y-8 bg-premium-white p-8 rounded-2xl shadow-xl border border-luxury-light-gold">
         
         {/* Basic Product Information */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Basic Information</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-2 sm:pb-3 uppercase tracking-wider">Basic Information</h3>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Product ID</label>
+              <label className="block text-sm font-semibold text-text-dark mb-1 sm:mb-2 uppercase tracking-wider">Product ID</label>
               <input
                 type="text"
                 value={data.ProductId}
                 onChange={(e) => update("ProductId", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="Enter Product ID"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Product Name</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Product Name</label>
               <input
                 type="text"
                 value={data.Name}
                 onChange={(e) => update("Name", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="Enter Product Name"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Slug</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Slug</label>
               <input
                 type="text"
                 value={data.Slug}
                 onChange={(e) => update("Slug", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="Enter Product Slug"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Description</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Description</label>
               <textarea
                 value={data.Description}
                 onChange={(e) => update("Description", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="Enter Product Description"
                 rows={3}
                 required
@@ -451,42 +649,42 @@ const ProductForm = ({
         </div>
 
         {/* Pricing Information */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Pricing</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Pricing</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Price</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Price</label>
               <input
                 type="number"
                 step="0.01"
                 value={data.Price || ""}
                 onChange={(e) => update("Price", parseFloatValue(e.target.value))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0.00"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Compare At Price</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Compare At Price</label>
               <input
                 type="number"
                 step="0.01"
                 value={data.CompareAtPrice || ""}
                 onChange={(e) => update("CompareAtPrice", parseFloatValue(e.target.value))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0.00"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Discount Percent</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Discount Percent</label>
               <input
                 type="number"
                 value={data.DiscountPercent || ""}
                 onChange={(e) => update("DiscountPercent", e.target.value === "" ? "" : parseFloat(e.target.value) || 0)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0"
               />
             </div>
@@ -494,94 +692,103 @@ const ProductForm = ({
         </div>
 
         {/* Categories */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Categories</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Categories</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Main Category</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Main Category</label>
               <select
                 value={data.ProductMainCategory}
                 onChange={(e) => update("ProductMainCategory", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
                 required
               >
                 <option value="">Select Main Category</option>
-                {dropdownOptions.mainCategories.map((category) => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Category</label>
-              <select
-                value={data.ProductCategory}
-                onChange={(e) => update("ProductCategory", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
-                required
-              >
-                <option value="">Select Category</option>
                 {dropdownOptions.categories.map((category) => (
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
+              {/* Debug info */}
+              {isEditMode && (
+                <div className="text-xs text-text-medium mt-1">
+                  Debug: Current value = "{data.ProductMainCategory}"
+                </div>
+              )}
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Sub Category</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Category</label>
               <select
-                value={data.ProductSubCategory}
-                onChange={(e) => update("ProductSubCategory", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                value={data.ProductCategory}
+                onChange={(e) => update("ProductCategory", e.target.value)}
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
                 required
               >
-                <option value="">Select Sub Category</option>
-                {dropdownOptions.subCategories.map((category) => (
+                <option value="">Select Category</option>
+                {dropdownOptions.mainCategories.map((category) => (
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
+              {/* Debug info */}
+              {isEditMode && (
+                <div className="text-xs text-text-medium mt-1">
+                  Debug: Current value = "{data.ProductCategory}"
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Sub Category</label>
+              <input
+                type="text"
+                value={data.ProductSubCategory}
+                onChange={(e) => update("ProductSubCategory", e.target.value)}
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
+                placeholder="Enter Sub Category"
+                required
+              />
             </div>
           </div>
         </div>
 
         {/* Product Attributes */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Product Attributes</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Product Attributes</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Sizes (comma separated)</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Sizes (comma separated)</label>
               <input
                 type="text"
                 value={sizesInput}
                 onChange={(e) => handleSizesChange(e.target.value)}
                 onBlur={handleSizesBlur}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="S, M, L, XL"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Available Colors (comma separated)</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Available Colors (comma separated)</label>
               <input
                 type="text"
                 value={colorsInput}
                 onChange={(e) => handleColorsChange(e.target.value)}
                 onBlur={handleColorsBlur}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="Navy, Rose, Blush"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Fabric Types (comma separated)</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Fabric Types (comma separated)</label>
               <input
                 type="text"
                 value={fabricInput}
                 onChange={(e) => handleFabricChange(e.target.value)}
                 onBlur={handleFabricBlur}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="Cotton, Silk"
               />
             </div>
@@ -589,16 +796,16 @@ const ProductForm = ({
         </div>
 
         {/* Price List */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Price List</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Price List</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Size</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Size</label>
               <select
                 value={priceListLocal.Size}
                 onChange={(e) => setPriceListLocal(prev => ({ ...prev, Size: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 {dropdownOptions.sizes.map((size) => (
                   <option key={size} value={size}>{size}</option>
@@ -607,45 +814,45 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Price Amount</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Price Amount</label>
               <input
                 type="number"
                 step="0.01"
                 value={priceListLocal.PriceAmount}
                 onChange={(e) => setPriceListLocal(prev => ({ ...prev, PriceAmount: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0.00"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Currency</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Currency</label>
               <input
                 type="text"
                 value={priceListLocal.Currency}
                 readOnly
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
+                className="w-full border-2 border-text-light/30 rounded-md px-4 py-3 bg-premium-cream text-text-medium text-sm cursor-not-allowed"
                 placeholder="Auto-set based on country"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Quantity</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Quantity</label>
               <input
                 type="number"
                 value={priceListLocal.Quantity}
                 onChange={(e) => setPriceListLocal(prev => ({ ...prev, Quantity: parseInt(e.target.value) || 0 }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Country</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Country</label>
               <select
                 value={priceListLocal.Country}
                 onChange={(e) => handlePriceListCountryChange(e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
                 required
               >
                 <option value="">Select Country</option>
@@ -659,28 +866,127 @@ const ProductForm = ({
           <button
             type="button"
             onClick={addPriceListItem}
-            className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors"
+            className="bg-luxury-gold text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-luxury-warm focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             Add Price List Item
           </button>
           
           {/* Display added price list items */}
-          {data.PriceList.length > 0 && (
+          {data.PriceList && data.PriceList.length > 0 && (
             <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-2">Added Price List Items:</h4>
-              <div className="space-y-2">
+              <h4 className="font-semibold text-text-dark mb-3 uppercase tracking-wider">Added Price List Items:</h4>
+                      <div className="space-y-4">
                 {data.PriceList.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
-                    <span className="text-sm">
+                          <div key={index} className="bg-premium-cream p-4 rounded-lg border border-luxury-light-gold">
+                    {isEditing('priceList', index) ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Size</label>
+                            <input
+                              type="text"
+                              value={item.Size || ''}
+                              onChange={(e) => updateArrayItem("PriceList", index, { ...item, Size: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Price Amount</label>
+                            <input
+                              type="number"
+                              value={item.PriceAmount || ''}
+                              onChange={(e) => updateArrayItem("PriceList", index, { ...item, PriceAmount: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Currency</label>
+                            <select
+                              value={item.Currency || 'INR'}
+                              onChange={(e) => updateArrayItem("PriceList", index, { ...item, Currency: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            >
+                              <option value="INR">INR</option>
+                              <option value="USD">USD</option>
+                              <option value="GBP">GBP</option>
+                              <option value="CAD">CAD</option>
+                              <option value="AUD">AUD</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Quantity</label>
+                            <input
+                              type="number"
+                              value={item.Quantity || ''}
+                              onChange={(e) => updateArrayItem("PriceList", index, { ...item, Quantity: parseInt(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Country</label>
+                            <select
+                              value={item.Country || 'IN'}
+                              onChange={(e) => {
+                                const countryCode = e.target.value;
+                                const existingPrice = findExistingPrice(countryCode, index);
+                                const existingCurrency = findExistingCurrency(countryCode, index);
+                                updateArrayItem("PriceList", index, { 
+                                  ...item, 
+                                  Country: countryCode,
+                                  PriceAmount: existingPrice || item.PriceAmount || 0,
+                                  Currency: existingCurrency
+                                });
+                              }}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            >
+                              {dropdownOptions.countries.map(country => (
+                                <option key={country.code} value={country.code}>{country.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                                <div className="flex space-x-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => stopEditing('priceList', index)}
+                                    className="bg-luxury-gold text-white px-3 py-1 rounded-lg text-sm hover:bg-luxury-warm transition-colors"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => stopEditing('priceList', index)}
+                                    className="bg-text-medium text-white px-3 py-1 rounded-lg text-sm hover:bg-text-dark transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-dark">
                       {item.Size} - {item.PriceAmount} {item.Currency} (Qty: {item.Quantity}, {dropdownOptions.countries.find(c => c.code === item.Country)?.name || item.Country})
                     </span>
+                        <div className="flex space-x-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditing('priceList', index)}
+                                    className="text-luxury-gold hover:text-luxury-warm text-sm font-medium"
+                                  >
+                                    Edit
+                                  </button>
                     <button
                       type="button"
                       onClick={() => removeFromArray("PriceList", index)}
-                      className="text-red-600 hover:text-red-800 text-sm"
+                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
                     >
                       Remove
                     </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -689,16 +995,16 @@ const ProductForm = ({
         </div>
 
         {/* Country Prices */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Country Prices</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Country Prices</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Country</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Country</label>
               <select
                 value={countryPriceLocal.Country}
                 onChange={(e) => handleCountryPriceCountryChange(e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
                 required
               >
                 <option value="">Select Country</option>
@@ -709,24 +1015,24 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Price Amount</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Price Amount</label>
               <input
                 type="number"
                 step="0.01"
                 value={countryPriceLocal.PriceAmount}
                 onChange={(e) => setCountryPriceLocal(prev => ({ ...prev, PriceAmount: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0.00"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Currency</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Currency</label>
               <input
                 type="text"
                 value={countryPriceLocal.Currency}
                 readOnly
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 text-gray-600 text-sm cursor-not-allowed"
+                className="w-full border-2 border-text-light/30 rounded-md px-4 py-3 bg-premium-cream text-text-medium text-sm cursor-not-allowed"
                 placeholder="Auto-set based on country"
               />
             </div>
@@ -735,21 +1041,107 @@ const ProductForm = ({
           <button
             type="button"
             onClick={addCountryPrice}
-            className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors"
+            className="bg-luxury-gold text-white px-6 py-3 rounded-lg hover:bg-luxury-warm focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             Add Country Price
           </button>
           
           {/* Display added country prices */}
-          {data.CountryPrices.length > 0 && (
+          {data.CountryPrices && data.CountryPrices.length > 0 && (
             <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-2">Added Country Prices:</h4>
+              <h4 className="font-semibold text-text-dark mb-3 uppercase tracking-wider">Added Country Prices:</h4>
               <div className="space-y-2">
                 {data.CountryPrices.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
-                    <span className="text-sm">
+                          <div key={index} className="bg-premium-cream p-4 rounded-lg border border-luxury-light-gold">
+                    {isEditing('countryPrices', index) ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Country</label>
+                            <select
+                              value={item.Country || 'IN'}
+                              onChange={(e) => {
+                                const countryCode = e.target.value;
+                                const existingPrice = findExistingPrice(countryCode, index);
+                                const existingCurrency = findExistingCurrency(countryCode, index);
+                                updateArrayItem("CountryPrices", index, { 
+                                  ...item, 
+                                  Country: countryCode,
+                                  PriceAmount: existingPrice || item.PriceAmount || 0,
+                                  Currency: existingCurrency
+                                });
+                              }}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            >
+                              {dropdownOptions.countries.map(country => (
+                                <option key={country.code} value={country.code}>{country.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Price Amount</label>
+                            <input
+                              type="number"
+                              value={item.PriceAmount || ''}
+                              onChange={(e) => updateArrayItem("CountryPrices", index, { ...item, PriceAmount: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Currency</label>
+                            <select
+                              value={item.Currency || 'INR'}
+                              onChange={(e) => updateArrayItem("CountryPrices", index, { ...item, Currency: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            >
+                              <option value="INR">INR</option>
+                              <option value="USD">USD</option>
+                              <option value="AED">AED</option>
+                              <option value="SAR">SAR</option>
+                              <option value="QAR">QAR</option>
+                              <option value="KWD">KWD</option>
+                              <option value="OMR">OMR</option>
+                              <option value="BHD">BHD</option>
+                              <option value="JOD">JOD</option>
+                              <option value="LBP">LBP</option>
+                              <option value="GBP">GBP</option>
+                              <option value="CAD">CAD</option>
+                              <option value="AUD">AUD</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('countryPrices', index)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('countryPrices', index)}
+                            className="bg-text-medium text-white px-3 py-1 rounded-lg text-sm hover:bg-text-dark transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-text-dark">
                       {dropdownOptions.countries.find(c => c.code === item.Country)?.name || item.Country} - {item.PriceAmount} {item.Currency}
                     </span>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditing('countryPrices', index)}
+                            className="text-luxury-gold hover:text-luxury-warm text-sm font-medium"
+                          >
+                            Edit
+                          </button>
                     <button
                       type="button"
                       onClick={() => removeFromArray("CountryPrices", index)}
@@ -757,6 +1149,9 @@ const ProductForm = ({
                     >
                       Remove
                     </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -765,61 +1160,61 @@ const ProductForm = ({
         </div>
 
         {/* Specifications */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Specifications</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Specifications</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Fabric</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Fabric</label>
               <input
                 type="text"
                 value={data.Specifications.Fabric}
                 onChange={(e) => update("Specifications.Fabric", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., 100% Cotton"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Length</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Length</label>
               <input
                 type="text"
                 value={data.Specifications.Length}
                 onChange={(e) => update("Specifications.Length", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., Hip length"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Origin</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Origin</label>
               <input
                 type="text"
                 value={data.Specifications.Origin}
                 onChange={(e) => update("Specifications.Origin", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., Made in India"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Fit</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Fit</label>
               <input
                 type="text"
                 value={data.Specifications.Fit}
                 onChange={(e) => update("Specifications.Fit", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., Relaxed"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Care</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Care</label>
               <input
                 type="text"
                 value={data.Specifications.Care}
                 onChange={(e) => update("Specifications.Care", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., Machine wash cold"
               />
             </div>
@@ -833,31 +1228,82 @@ const ProductForm = ({
                 type="text"
                 value={specExtraLocal.Key}
                 onChange={(e) => setSpecExtraLocal(prev => ({ ...prev, Key: e.target.value }))}
-                className="flex-1 border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="flex-1 border-2 border-text-light/30 rounded-md px-4 py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
                 placeholder="Key (e.g., Weight)"
               />
               <input
                 type="text"
                 value={specExtraLocal.Value}
                 onChange={(e) => setSpecExtraLocal(prev => ({ ...prev, Value: e.target.value }))}
-                className="flex-1 border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="flex-1 border-2 border-text-light/30 rounded-md px-4 py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
                 placeholder="Value (e.g., 220g)"
               />
               <button
                 type="button"
                 onClick={addSpecExtra}
-                className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors w-full sm:w-auto"
+                className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-colors w-full sm:w-auto"
               >
                 Add
               </button>
             </div>
             
             {/* Display extra specifications */}
-            {data.Specifications.Extra.length > 0 && (
+            {data.Specifications && data.Specifications.Extra && data.Specifications.Extra.length > 0 && (
               <div className="mt-2 space-y-1">
                 {data.Specifications.Extra.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                    <span className="text-sm">{item.Key}: {item.Value}</span>
+                  <div key={index} className="bg-premium-cream p-3 rounded-lg border border-luxury-light-gold">
+                    {isEditing('specifications', index) ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Key</label>
+                            <input
+                              type="text"
+                              value={item.Key || item.key || ''}
+                              onChange={(e) => updateArrayItem("Specifications.Extra", index, { ...item, Key: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Value</label>
+                            <input
+                              type="text"
+                              value={item.Value || item.value || ''}
+                              onChange={(e) => updateArrayItem("Specifications.Extra", index, { ...item, Value: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('specifications', index)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('specifications', index)}
+                            className="bg-text-medium text-white px-3 py-1 rounded-lg text-sm hover:bg-text-dark transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{item.Key || item.key}: {item.Value || item.value}</span>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditing('specifications', index)}
+                            className="text-luxury-gold hover:text-luxury-warm text-sm font-medium"
+                          >
+                            Edit
+                          </button>
                     <button
                       type="button"
                       onClick={() => removeFromArray("Specifications.Extra", index)}
@@ -865,6 +1311,9 @@ const ProductForm = ({
                     >
                       Remove
                     </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -873,31 +1322,31 @@ const ProductForm = ({
         </div>
 
         {/* Key Features */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Key Features</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Key Features</h3>
           
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <input
               type="text"
               value={keyFeatureLocal}
               onChange={(e) => setKeyFeatureLocal(e.target.value)}
-              className="flex-1 border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+              className="flex-1 border-2 border-text-light/30 rounded-md px-4 py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
               placeholder="Enter a key feature"
             />
             <button
               type="button"
               onClick={addKeyFeature}
-              className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors w-full sm:w-auto"
+              className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-colors w-full sm:w-auto"
             >
               Add Feature
             </button>
           </div>
           
           {/* Display key features */}
-          {data.KeyFeatures.length > 0 && (
+          {data.KeyFeatures && data.KeyFeatures.length > 0 && (
             <div className="mt-2 space-y-1">
               {data.KeyFeatures.map((feature, index) => (
-                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                <div key={index} className="flex items-center justify-between bg-premium-cream p-3 rounded-lg border border-luxury-light-gold">
                   <span className="text-sm">{feature}</span>
                   <button
                     type="button"
@@ -913,31 +1362,31 @@ const ProductForm = ({
         </div>
 
         {/* Care Instructions */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Care Instructions</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Care Instructions</h3>
           
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <input
               type="text"
               value={careInstructionLocal}
               onChange={(e) => setCareInstructionLocal(e.target.value)}
-              className="flex-1 border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+              className="flex-1 border-2 border-text-light/30 rounded-md px-4 py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
               placeholder="Enter a care instruction"
             />
             <button
               type="button"
               onClick={addCareInstruction}
-              className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors w-full sm:w-auto"
+              className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-colors w-full sm:w-auto"
             >
               Add Instruction
             </button>
           </div>
           
           {/* Display care instructions */}
-          {data.CareInstructions.length > 0 && (
+          {data.CareInstructions && data.CareInstructions.length > 0 && (
             <div className="mt-2 space-y-1">
               {data.CareInstructions.map((instruction, index) => (
-                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                <div key={index} className="flex items-center justify-between bg-premium-cream p-3 rounded-lg border border-luxury-light-gold">
                   <span className="text-sm">{instruction}</span>
                   <button
                     type="button"
@@ -953,27 +1402,27 @@ const ProductForm = ({
         </div>
 
         {/* Inventory */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Inventory</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Inventory</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">SKU</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">SKU</label>
               <input
                 type="text"
                 value={inventoryLocal.Sku}
                 onChange={(e) => setInventoryLocal(prev => ({ ...prev, Sku: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., PID10001-NAV-S"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Size</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Size</label>
               <select
                 value={inventoryLocal.Size}
                 onChange={(e) => setInventoryLocal(prev => ({ ...prev, Size: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 {dropdownOptions.sizes.map((size) => (
                   <option key={size} value={size}>{size}</option>
@@ -982,11 +1431,11 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Color</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Color</label>
               <select
                 value={inventoryLocal.Color}
                 onChange={(e) => setInventoryLocal(prev => ({ ...prev, Color: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 {dropdownOptions.colors.map((color) => (
                   <option key={color} value={color}>{color}</option>
@@ -995,12 +1444,12 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Quantity</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Quantity</label>
               <input
                 type="number"
                 value={inventoryLocal.Quantity}
                 onChange={(e) => setInventoryLocal(prev => ({ ...prev, Quantity: parseInt(e.target.value) || 0 }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0"
               />
             </div>
@@ -1009,21 +1458,117 @@ const ProductForm = ({
           <button
             type="button"
             onClick={addInventory}
-            className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors"
+            className="bg-luxury-gold text-white px-6 py-3 rounded-lg hover:bg-luxury-warm focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             Add Inventory Item
           </button>
           
           {/* Display inventory items */}
-          {data.Inventory.length > 0 && (
+          {data.Inventory && data.Inventory.length > 0 && (
             <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-2">Added Inventory Items:</h4>
+              <h4 className="font-semibold text-text-dark mb-3 uppercase tracking-wider">Added Inventory Items:</h4>
               <div className="space-y-2">
                 {data.Inventory.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                  <div key={index} className="bg-premium-cream p-4 rounded-lg border border-luxury-light-gold">
+                    {isEditing('inventory', index) ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">SKU</label>
+                            <input
+                              type="text"
+                              value={item.Sku || item.sku || ''}
+                              onChange={(e) => updateArrayItem("Inventory", index, { ...item, Sku: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Size</label>
+                            <select
+                              value={item.Size || item.size || 'S'}
+                              onChange={(e) => updateArrayItem("Inventory", index, { ...item, Size: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            >
+                              {dropdownOptions.sizes.map(size => (
+                                <option key={size} value={size}>{size}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Color</label>
+                            <input
+                              type="text"
+                              value={item.Color || item.color || ''}
+                              onChange={(e) => updateArrayItem("Inventory", index, { ...item, Color: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Quantity</label>
+                            <input
+                              type="number"
+                              value={item.Quantity || item.quantity || ''}
+                              onChange={(e) => updateArrayItem("Inventory", index, { ...item, Quantity: parseInt(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Reserved</label>
+                            <input
+                              type="number"
+                              value={item.Reserved || item.reserved || ''}
+                              onChange={(e) => updateArrayItem("Inventory", index, { ...item, Reserved: parseInt(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Warehouse ID</label>
+                            <input
+                              type="text"
+                              value={item.WarehouseId || item.warehouseId || ''}
+                              onChange={(e) => updateArrayItem("Inventory", index, { ...item, WarehouseId: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('inventory', index)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('inventory', index)}
+                            className="bg-text-medium text-white px-3 py-1 rounded-lg text-sm hover:bg-text-dark transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-center justify-between">
                     <span className="text-sm">
-                      {item.Sku} - {item.Size} / {item.Color} (Qty: {item.Quantity})
+                          {item.Sku || item.sku} - {item.Size || item.size} / {item.Color || item.color} (Qty: {item.Quantity || item.quantity})
+                          {item.Reserved && item.Reserved > 0 && (
+                            <span className="text-orange-600 ml-2">(Reserved: {item.Reserved})</span>
+                          )}
+                          {item.WarehouseId && (
+                            <span className="text-gray-500 ml-2">(WH: {item.WarehouseId})</span>
+                          )}
                     </span>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditing('inventory', index)}
+                            className="text-luxury-gold hover:text-luxury-warm text-sm font-medium"
+                          >
+                            Edit
+                          </button>
                     <button
                       type="button"
                       onClick={() => removeFromArray("Inventory", index)}
@@ -1031,6 +1576,9 @@ const ProductForm = ({
                     >
                       Remove
                     </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1039,27 +1587,27 @@ const ProductForm = ({
         </div>
 
         {/* Variants */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Variants</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Variants</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">SKU</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">SKU</label>
               <input
                 type="text"
                 value={variantLocal.Sku}
                 onChange={(e) => setVariantLocal(prev => ({ ...prev, Sku: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., PID10001-NAV-S"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Color</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Color</label>
               <select
                 value={variantLocal.Color}
                 onChange={(e) => setVariantLocal(prev => ({ ...prev, Color: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 {dropdownOptions.colors.map((color) => (
                   <option key={color} value={color}>{color}</option>
@@ -1068,11 +1616,11 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Size</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Size</label>
               <select
                 value={variantLocal.Size}
                 onChange={(e) => setVariantLocal(prev => ({ ...prev, Size: e.target.value }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 {dropdownOptions.sizes.map((size) => (
                   <option key={size} value={size}>{size}</option>
@@ -1081,12 +1629,12 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Quantity</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Quantity</label>
               <input
                 type="number"
                 value={variantLocal.Quantity}
                 onChange={(e) => setVariantLocal(prev => ({ ...prev, Quantity: parseInt(e.target.value) || 0 }))}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="0"
               />
             </div>
@@ -1095,21 +1643,118 @@ const ProductForm = ({
           <button
             type="button"
             onClick={addVariant}
-            className="bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors"
+            className="bg-luxury-gold text-white px-6 py-3 rounded-lg hover:bg-luxury-warm focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             Add Variant
           </button>
           
           {/* Display variants */}
-          {data.Variants.length > 0 && (
+          {data.Variants && data.Variants.length > 0 && (
             <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-2">Added Variants:</h4>
+              <h4 className="font-semibold text-text-dark mb-3 uppercase tracking-wider">Added Variants:</h4>
               <div className="space-y-2">
                 {data.Variants.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                  <div key={index} className="bg-premium-cream p-4 rounded-lg border border-luxury-light-gold">
+                    {isEditing('variants', index) ? (
+                      // Edit mode
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">SKU</label>
+                            <input
+                              type="text"
+                              value={item.Sku || item.sku || ''}
+                              onChange={(e) => updateArrayItem("Variants", index, { ...item, Sku: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Color</label>
+                            <input
+                              type="text"
+                              value={item.Color || item.color || ''}
+                              onChange={(e) => updateArrayItem("Variants", index, { ...item, Color: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Size</label>
+                            <select
+                              value={item.Size || item.size || 'S'}
+                              onChange={(e) => updateArrayItem("Variants", index, { ...item, Size: e.target.value })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            >
+                              {dropdownOptions.sizes.map(size => (
+                                <option key={size} value={size}>{size}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Quantity</label>
+                            <input
+                              type="number"
+                              value={item.Quantity || item.quantity || ''}
+                              onChange={(e) => updateArrayItem("Variants", index, { ...item, Quantity: parseInt(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-text-dark mb-2 uppercase tracking-wider">Price Override</label>
+                            <input
+                              type="number"
+                              value={item.PriceOverride || item.priceOverride || ''}
+                              onChange={(e) => updateArrayItem("Variants", index, { ...item, PriceOverride: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-luxury-light-gold rounded-lg text-sm bg-premium-white focus:border-luxury-gold focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`variant-active-${index}`}
+                              checked={item.IsActive !== undefined ? item.IsActive : (item.isActive !== undefined ? item.isActive : true)}
+                              onChange={(e) => updateArrayItem("Variants", index, { ...item, IsActive: e.target.checked })}
+                              className="mr-2"
+                            />
+                            <label htmlFor={`variant-active-${index}`} className="text-xs font-medium text-gray-700">Active</label>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('variants', index)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => stopEditing('variants', index)}
+                            className="bg-text-medium text-white px-3 py-1 rounded-lg text-sm hover:bg-text-dark transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-center justify-between">
                     <span className="text-sm">
-                      {item.Sku} - {item.Color} / {item.Size} (Qty: {item.Quantity})
+                          {item.Sku || item.sku} - {item.Color || item.color} / {item.Size || item.size} (Qty: {item.Quantity || item.quantity})
+                          {item.PriceOverride && item.PriceOverride > 0 && (
+                            <span className="text-luxury-gold ml-2 font-medium">(Override: {item.PriceOverride})</span>
+                          )}
+                          <span className={`ml-2 px-2 py-1 rounded text-xs ${(item.IsActive !== undefined ? item.IsActive : (item.isActive !== undefined ? item.isActive : true)) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {(item.IsActive !== undefined ? item.IsActive : (item.isActive !== undefined ? item.isActive : true)) ? 'Active' : 'Inactive'}
                     </span>
+                        </span>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditing('variants', index)}
+                            className="text-luxury-gold hover:text-luxury-warm text-sm font-medium"
+                          >
+                            Edit
+                          </button>
                     <button
                       type="button"
                       onClick={() => removeFromArray("Variants", index)}
@@ -1117,6 +1762,9 @@ const ProductForm = ({
                     >
                       Remove
                     </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1125,8 +1773,8 @@ const ProductForm = ({
         </div>
 
         {/* Product Images */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Product Images</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Product Images</h3>
           
           <div className="flex gap-2 items-center">
             <ImageUploader 
@@ -1136,9 +1784,9 @@ const ProductForm = ({
           </div>
           
           {/* Display uploaded images */}
-          {data.Images.length > 0 && (
+          {data.Images && data.Images.length > 0 && (
             <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-2">Uploaded Images:</h4>
+              <h4 className="font-semibold text-text-dark mb-3 uppercase tracking-wider">Uploaded Images:</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {data.Images.map((img, index) => (
                   <div key={index} className="border border-gray-300 rounded-md p-2">
@@ -1163,16 +1811,16 @@ const ProductForm = ({
         </div>
 
         {/* Shipping Information */}
-        <div className="space-y-3 sm:space-y-4">
-          <h3 className="text-xl sm:text-2xl font-bold text-black border-b border-text-light/20 pb-2 sm:pb-3 uppercase tracking-wider">Shipping Information</h3>
+        <div className="space-y-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-text-dark border-b border-luxury-light-gold pb-3 uppercase tracking-wider">Shipping Information</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Free Delivery</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Free Delivery</label>
               <select
                 value={data.FreeDelivery}
                 onChange={(e) => update("FreeDelivery", e.target.value === "true")}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 <option value="true">Yes</option>
                 <option value="false">No</option>
@@ -1180,22 +1828,22 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Return Policy</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Return Policy</label>
               <input
                 type="text"
                 value={data.ReturnPolicy}
                 onChange={(e) => update("ReturnPolicy", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., 7 Days"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Free Shipping</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Free Shipping</label>
               <select
                 value={data.ShippingInfo.FreeShipping}
                 onChange={(e) => update("ShippingInfo.FreeShipping", e.target.value === "true")}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 <option value="true">Yes</option>
                 <option value="false">No</option>
@@ -1203,22 +1851,22 @@ const ProductForm = ({
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Estimated Delivery</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Estimated Delivery</label>
               <input
                 type="text"
                 value={data.ShippingInfo.EstimatedDelivery}
                 onChange={(e) => update("ShippingInfo.EstimatedDelivery", e.target.value)}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white placeholder:text-text-light text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white placeholder:text-text-light text-sm"
                 placeholder="e.g., 2-4 Days"
               />
             </div>
             
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-black mb-1 sm:mb-2 uppercase tracking-wider">Cash on Delivery</label>
+              <label className="block text-sm font-semibold text-text-dark mb-2 uppercase tracking-wider">Cash on Delivery</label>
               <select
                 value={data.ShippingInfo.CashOnDelivery}
                 onChange={(e) => update("ShippingInfo.CashOnDelivery", e.target.value === "true")}
-                className="w-full border-2 border-text-light/30 rounded-md px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:border-black transition-colors text-black bg-white text-sm"
+                className="w-full border-2 border-luxury-light-gold rounded-lg px-4 py-3 focus:outline-none focus:border-luxury-gold transition-colors text-text-dark bg-premium-white text-sm"
               >
                 <option value="true">Yes</option>
                 <option value="false">No</option>
@@ -1228,10 +1876,10 @@ const ProductForm = ({
         </div>
 
         {/* Submit Button */}
-        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-6 sm:pt-8 border-t border-text-light/20">
+        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-8 border-t border-luxury-light-gold">
           <button
             type="submit"
-            className="bg-black text-white px-6 sm:px-8 py-3 sm:py-4 rounded-md hover:bg-text-dark focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-xs sm:text-sm transition-colors w-full sm:w-auto"
+            className="bg-luxury-gold text-white px-8 py-4 rounded-lg hover:bg-luxury-warm focus:outline-none focus:ring-2 focus:ring-luxury-gold font-semibold uppercase tracking-wider text-sm transition-all duration-200 transform hover:scale-105 shadow-lg w-full sm:w-auto"
           >
             {submitButtonText}
           </button>

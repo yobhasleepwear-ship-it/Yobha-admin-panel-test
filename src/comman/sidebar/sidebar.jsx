@@ -1,65 +1,156 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { 
+  Package, 
+  Plus,
+  LogOut
+} from "lucide-react";
+import { LocalStorageKeys } from "../../constants/localStorageKeys";
+import * as localStorageService from "../../service/localStorageService";
 
-const Sidebar = () => {
-  const [openTab, setOpenTab] = useState(null);
+const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const toggleTab = (tab) => {
-    setOpenTab(openTab === tab ? null : tab);
+  // Logout function
+  const handleLogout = () => {
+    localStorageService.clearAll();
+    navigate("/login");
+  };
+
+  const menuItems = [
+    {
+      title: "Products",
+      icon: Package,
+      path: "/products"
+    },
+    {
+      title: "Add Product",
+      icon: Plus,
+      path: "/add-product"
+    },
+    {
+      title: "Logout",
+      icon: LogOut,
+      path: "/logout",
+      onClick: handleLogout,
+    }
+  ];
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  const handleLinkClick = () => {
+    if (isMobileOpen) {
+      setIsMobileOpen(false);
+    }
   };
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-200 text-black flex flex-col">
-      <h1 className="text-xl font-bold p-4 border-b border-gray-200">Dashboard</h1>
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
 
-      {/* Product Accordion */}
-      <div className="flex flex-col">
-        <button
-          onClick={() => toggleTab("product")}
-          className="flex justify-between items-center p-4 hover:bg-gray-100 w-full text-left"
-        >
-          Product
-          {openTab === "product" ? <ChevronUp /> : <ChevronDown />}
-        </button>
-        {openTab === "product" && (
-          <div className="flex flex-col pl-6 bg-gray-50">
-            <a
-              href="/add-product"
-              className="p-2 hover:bg-gray-200 rounded"
-            >
-              Add Product
-            </a>
-            <a
-              href="/edit-product"
-              className="p-2 hover:bg-gray-200 rounded"
-            >
-              Edit Product
-            </a>
-          </div>
-        )}
-      </div>
+      {/* Sidebar */}
+      <div className={`
+        ${isCollapsed ? 'w-16' : 'w-64'}
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed lg:relative top-0 left-0 h-screen bg-premium-white border-r border-luxury-light-gold z-50 lg:z-auto
+        transition-all duration-300 ease-in-out flex-shrink-0 flex flex-col shadow-2xl
+      `}>
+        {/* Sidebar Header */}
+        <div className="flex items-center justify-between p-4 border-b border-luxury-light-gold h-16 bg-premium-white">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            className="lg:hidden p-2 rounded-md text-text-dark hover:text-luxury-gold hover:bg-premium-cream transition-colors"
+            aria-label="Toggle menu"
+          >
+            <Package size={20} />
+          </button>
 
-      {/* Orders Accordion */}
-      <div className="flex flex-col">
-        <button
-          onClick={() => toggleTab("orders")}
-          className="flex justify-between items-center p-4 hover:bg-gray-100 w-full text-left"
-        >
-          Orders
-          {openTab === "orders" ? <ChevronUp /> : <ChevronDown />}
-        </button>
-        {openTab === "orders" && (
-          <div className="flex flex-col pl-6 bg-gray-50">
-            <a
-              href="/view-orders"
-              className="p-2 hover:bg-gray-200 rounded"
-            >
-              View Orders
-            </a>
-          </div>
-        )}
+          {!isCollapsed && (
+            <div className="flex items-center">
+              <img
+                src={require("../../assets/YOBHA_logo_final.png")}
+                alt="YOBHA Admin"
+                className="h-8"
+              />
+            </div>
+          )}
+          
+          {/* Collapse Toggle - Desktop Only */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-premium-cream transition-colors text-text-dark hover:text-luxury-gold"
+          >
+            {isCollapsed ? (
+              <div className="w-4 h-4 border-r-2 border-t-2 border-current transform rotate-45"></div>
+            ) : (
+              <div className="w-4 h-4 border-l-2 border-b-2 border-current transform rotate-45"></div>
+            )}
+          </button>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 py-4 overflow-y-auto">
+          <ul className="space-y-2 px-2">
+            {menuItems.map((item, index) => {
+              const Icon = item.icon;
+              const isItemActive = isActive(item.path);
+              
+              return (
+                <li key={index}>
+                  {item.onClick ? (
+                    <button
+                      onClick={item.onClick}
+                      className={`
+                        flex items-center w-full px-4 py-3 text-sm font-medium transition-all duration-200 rounded-lg
+                        ${isItemActive 
+                          ? 'bg-luxury-gold text-white shadow-lg transform scale-105' 
+                          : 'text-text-dark hover:bg-premium-cream hover:text-luxury-gold hover:transform hover:scale-105'
+                        }
+                        ${isCollapsed ? 'justify-center' : ''}
+                      `}
+                    >
+                      <Icon size={20} className="flex-shrink-0" />
+                      {!isCollapsed && (
+                        <span className="ml-3 font-semibold">{item.title}</span>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      onClick={handleLinkClick}
+                      className={`
+                        flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-lg
+                        ${isItemActive 
+                          ? 'bg-luxury-gold text-white shadow-lg transform scale-105' 
+                          : 'text-text-dark hover:bg-premium-cream hover:text-luxury-gold hover:transform hover:scale-105'
+                        }
+                        ${isCollapsed ? 'justify-center' : ''}
+                      `}
+                    >
+                      <Icon size={20} className="flex-shrink-0" />
+                      {!isCollapsed && (
+                        <span className="ml-3 font-semibold">{item.title}</span>
+                      )}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
       </div>
-    </div>
+    </>
   );
 };
 

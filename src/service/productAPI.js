@@ -1,6 +1,93 @@
 import * as axiosService from "./axiosService";
 
+// Get all products
+export const GetAllProducts = async () => {
+  try {
+    console.log("GetAllProducts: Making API call to /Products");
+    const response = await axiosService.Get("/Products");
+    console.log("GetAllProducts: Raw response:", response);
+    console.log("GetAllProducts: Response data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("GetAllProducts error:", error);
+    console.error("GetAllProducts error response:", error.response);
+    console.error("GetAllProducts error status:", error.response?.status);
+    console.error("GetAllProducts error data:", error.response?.data);
+    throw error;
+  }
+};
 
+// Get product by ID
+export const GetProductById = async (productId) => {
+  try {
+    console.log("GetProductById: Making API call to /Products/" + productId);
+    const response = await axiosService.Get(`/Products/${productId}`);
+    console.log("GetProductById: Raw response:", response);
+    console.log("GetProductById: Response data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("GetProductById error:", error);
+    console.error("GetProductById error response:", error.response);
+    console.error("GetProductById error status:", error.response?.status);
+    console.error("GetProductById error data:", error.response?.data);
+    throw error;
+  }
+};
+
+// Add new product
+export const AddProduct = async (payload) => {
+  try {
+    console.log("AddProduct: Making API call to /Products");
+    console.log("AddProduct: Payload:", payload);
+    const response = await axiosService.Post("/Products", payload);
+    console.log("AddProduct: Raw response:", response);
+    console.log("AddProduct: Response data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("AddProduct error:", error);
+    console.error("AddProduct error response:", error.response);
+    console.error("AddProduct error status:", error.response?.status);
+    console.error("AddProduct error data:", error.response?.data);
+    throw error;
+  }
+};
+
+// Update product
+export const UpdateProduct = async (productId, payload) => {
+  try {
+    console.log("UpdateProduct: Making API call to /Products/" + productId);
+    console.log("UpdateProduct: Payload:", payload);
+    const response = await axiosService.Put(`/Products/${productId}`, payload);
+    console.log("UpdateProduct: Raw response:", response);
+    console.log("UpdateProduct: Response data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("UpdateProduct error:", error);
+    console.error("UpdateProduct error response:", error.response);
+    console.error("UpdateProduct error status:", error.response?.status);
+    console.error("UpdateProduct error data:", error.response?.data);
+    throw error;
+  }
+};
+
+// Delete product
+export const DeleteProduct = async (productId) => {
+  try {
+    console.log("DeleteProduct: Making API call to /Products/" + productId);
+    const response = await axiosService.Delete(`/Products/${productId}`);
+    console.log("DeleteProduct: Raw response:", response);
+    console.log("DeleteProduct: Response data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("DeleteProduct error:", error);
+    console.error("DeleteProduct error response:", error.response);
+    console.error("DeleteProduct error status:", error.response?.status);
+    console.error("DeleteProduct error data:", error.response?.data);
+    throw error;
+  }
+};
+
+// Get filtered products (existing function)
 export const getFilteredProducts = async (payload) => {
   try {
     const response = await axiosService.Get("/Products", payload);
@@ -11,7 +98,7 @@ export const getFilteredProducts = async (payload) => {
   }
 };
 
-
+// Get product description (existing function)
 export const getProductDescription = async (id) => {
   try {
     const response = await axiosService.Get(`/Products/${id}`);
@@ -25,6 +112,7 @@ export const getProductDescription = async (id) => {
   }
 };
 
+// Cart related functions (keeping existing)
 export const getCartDetails = async () => {
   try {
     const response = await axiosService.Get(`/Cart`);

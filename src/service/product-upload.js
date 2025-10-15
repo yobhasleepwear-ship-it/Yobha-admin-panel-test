@@ -30,10 +30,16 @@ export const AddProduct = async (payload) => {
 
 export const GetAllProducts = async () => {
     try {
+        console.log("GetAllProducts: Making API call to /Products");
         const response = await axiosService.Get("/Products");
+        console.log("GetAllProducts: Raw response:", response);
+        console.log("GetAllProducts: Response data:", response.data);
         return response.data;
     } catch (error) {
         console.error("GetAllProducts error:", error);
+        console.error("GetAllProducts error response:", error.response);
+        console.error("GetAllProducts error status:", error.response?.status);
+        console.error("GetAllProducts error data:", error.response?.data);
         throw error;
     }
 };

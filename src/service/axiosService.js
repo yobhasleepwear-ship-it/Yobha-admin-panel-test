@@ -1,9 +1,8 @@
 import axios from "axios";
-import * as localStorageService from "./localStorageService";
 import { LocalStorageKeys } from "../constants/localStorageKeys";
 
 const apiClient = axios.create({
-  baseURL: "http://65.2.184.190/api",
+  baseURL: "https://backend.yobha.world/api",
   timeout: 20000,
   headers: {
     "Content-Type": "application/json",
@@ -12,8 +11,14 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorageService.getValue(LocalStorageKeys.AuthToken);
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    const token = localStorage.getItem(LocalStorageKeys.AuthToken);
+    console.log("Axios Interceptor - Token from localStorage:", token);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log("Axios Interceptor - Authorization header set");
+    } else {
+      console.log("Axios Interceptor - No token found");
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -32,6 +37,11 @@ export const Post = async (url, data = {}, config = {}) => {
 
 export const Put = async (url, data = {}, config = {}) => {
   const response = await apiClient.put(url, data, config);
+  return response;
+};
+
+export const Patch = async (url, data = {}, config = {}) => {
+  const response = await apiClient.patch(url, data, config);
   return response;
 };
 
