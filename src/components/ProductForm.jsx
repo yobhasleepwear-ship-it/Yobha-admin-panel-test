@@ -422,6 +422,7 @@ const ProductForm = ({
         Country: priceListLocal.Country
       };
       addToArray("PriceList", item);
+      console.log(item,"item")
       setPriceListLocal({ 
         Size: dropdownOptions.sizes[0], 
         PriceAmount: "0", 
