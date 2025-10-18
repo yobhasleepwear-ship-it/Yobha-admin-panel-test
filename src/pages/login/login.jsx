@@ -91,7 +91,7 @@ const LoginPage = () => {
                 </form>
 
                 {/* Signup Link */}
-          <p className="text-center text-text-medium mt-3 sm:mt-4 text-xs sm:text-sm">
+          {/* <p className="text-center text-text-medium mt-3 sm:mt-4 text-xs sm:text-sm">
             Don't have an account?{" "}
             <Link
               to="/signup"
@@ -99,7 +99,7 @@ const LoginPage = () => {
                   >
                     Sign Up
             </Link>
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
